@@ -41,7 +41,7 @@ void setup(){
   lcd.backlight();
   lcd.setCursor(16,0);
   lcd.print("Welcome!");
-  for(int i = 0; i < 35; i++){
+  for(int i = 0; i < 24; i++){
     lcd.scrollDisplayLeft();
     delay(350);
   }
