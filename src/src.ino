@@ -2,9 +2,27 @@
 #include <LiquidCrystal_I2C.h>
 #include <DHT.h>
 
-LiquidCrystal_I2C lcd(0x27/*LCD Address*/, 16/*LCD Columns*/, 2/*LCD Rows*/);
-DHT dht(2/*DHT Connection Pin*/, DHT11/*Type of DHT sensor*/);
+//Configuration variables
+int dhtSensorPin = 2;
+int displayOnOffButtonPin = 7;
+int nextDisplayButtonPin = 8;
 
+//Initialise LiquidCrystal Library as lcd
+LiquidCrystal_I2C lcd(0x27, 16, 2); //(LCD_ADDRESS, LCD_COLUMNS, LCD ROWS)
+
+//Initialise DHT Temperature Sensor Library as dht
+DHT dht(dhtSensorPin, DHT11); //(Connection pin, type of DHT sensor)
+
+//Global Variables
+boolean activated = true;
+boolean firstActivationRefresh = true;
+double activationTime = millis();
+double buttonPressTime = millis();
+double refreshTime = millis();
+int currentDisplay = 1;
+int latchOnTime = 30000;
+
+//Degrees Celsius custom character
 byte degreesC[8] = {
   B11000,
   B11000,
@@ -15,25 +33,17 @@ byte degreesC[8] = {
   B01111,
 };
 
-boolean activated = true;
-boolean firstActivationRefresh = true;
-double activationTime = millis();
-double buttonPressTime = millis();
-double refreshTime = millis();
-int currentDisplay = 1;
-int latchOnTime = 30000;
-
 void setup(){
+  pinMode(displayOnOffButtonPin, INPUT);
+  pinMode(nextDisplayButtonPin, INPUT);
   
-  pinMode(7, INPUT);
-  pinMode(7, INPUT);
-  
-  //initialise temperature/humidity sensor
+  // begin temperature/humidity sensor
   dht.begin();
   
-  // initialize the LCD
+  // begin the LCD
   lcd.begin();
 
+  //Load custom character to LCD
   lcd.createChar(0, degreesC);
   
   
@@ -50,7 +60,7 @@ void setup(){
 }
 
 void loop(){
-  if(digitalRead(7) == HIGH && millis() - buttonPressTime >= 500){
+  if(digitalRead(displayOnOffButtonPin) == HIGH && millis() - buttonPressTime >= 500){
     buttonPressTime = millis(); 
     if(!activated){
       activationTime = millis();
@@ -64,7 +74,7 @@ void loop(){
     activated = false;
   }
   
-  if(digitalRead(8) == HIGH && millis() - buttonPressTime >= 500){
+  if(digitalRead(nextDisplayButtonPin) == HIGH && millis() - buttonPressTime >= 500){
     buttonPressTime = millis();
     switchCurrentDisplay();
     
